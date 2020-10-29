@@ -65,7 +65,6 @@ public abstract class AbstractImporter<T, S extends ImportLine> implements Impor
 			reinitialize();
 			this.onParseLine((S)s);
 		});
-		strategy.getPostProcessors().add(this::postProcess);
 		strategy.parse();
 	}
 

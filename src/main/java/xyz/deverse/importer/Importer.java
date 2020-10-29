@@ -5,7 +5,7 @@ import xyz.deverse.importer.generic.ImportTag;
 import java.util.Collection;
 import java.util.List;
 
-public interface Importer<T, S extends ImportLine> {
+public interface Importer<T, S extends ImportLine>{
 
 	List<? extends ImportTag> getImportTags();
 
@@ -20,9 +20,6 @@ public interface Importer<T, S extends ImportLine> {
 	void process(ImportStrategy<T, S> strategy);
 
 	default void preProcess() {
-	};
-
-	default void postProcess(Collection<ImportMapper.MappedLine<T>> lines) {
 	};
 
 	Boolean isMatching(List<? extends ImportTag> importTags);

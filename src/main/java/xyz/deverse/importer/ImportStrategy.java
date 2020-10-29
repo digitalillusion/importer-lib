@@ -8,6 +8,7 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.event.Level;
 import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Getter;
@@ -55,7 +56,7 @@ public abstract class ImportStrategy<T, S extends ImportLine> {
 	 * The final post processors, applied to the collected results
 	 */
 	@Getter
-	protected Collection<Consumer<Collection<ImportMapper.MappedLine<T>>>> postProcessors;
+	protected Collection<StrategyPostProcessor> postProcessors;
 
 	protected ImportStrategy() {
 		clearProcessors();
@@ -78,13 +79,16 @@ public abstract class ImportStrategy<T, S extends ImportLine> {
 	}
 
 	public void parse() {
-		Stream<ImportLine> inputStream = read();
+		lineProcessors.add(Math.max(0, lineProcessors.size() - 1), line -> {
+			if (!hasNext() && !line.getSeverity().equals(Level.ERROR)) {
+				postProcessors.forEach(pp -> pp.postProcess(getResults()));
+			} else if (ImportMapper.MappedLine.class.isAssignableFrom(line.getClass())) {
+				getResults().addAll((Collection<? extends S>) line.getNodes());
+			}
+		});
 
-		Collection<?> collect = inputStream.collect(Collectors.toCollection(LinkedList::new))
-				.stream().filter(result -> ImportMapper.MappedLine.class.isAssignableFrom(result.getClass())).collect(Collectors.toCollection(LinkedList::new));
-
-		setResults((Collection<S>) collect);
-		postProcessors.forEach(pp -> pp.accept( (Collection<ImportMapper.MappedLine<T>>) collect));
+		// Consume the stream as side effect
+		read().count();
 	}
 
 	Stream<ImportLine> read() {

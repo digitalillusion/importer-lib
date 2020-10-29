@@ -404,7 +404,7 @@ public abstract class CsvFileReader<T, S extends CsvLine<T>> extends FileReader<
 				.orElse(ActionType.PERSIST);
 	}
 
-	private ImportLine parseRowForCsvLine(Row row, Sheet sheet, Integer totalRowCount, Integer rowNum, S csvLine, List<String> sheetNames) {
+	private ImportLine parseRowForCsvLine(Row row, Sheet sheet, Integer totalRowCount, Integer rowNum, S csvLine, List<String> sheetNames) throws Exception {
 		ImportLine importerLine;
 		if (mapper.apply(version).isNeeded()) {
 			try {
@@ -424,8 +424,8 @@ public abstract class CsvFileReader<T, S extends CsvLine<T>> extends FileReader<
 			} catch (Exception e) {
 				// Dont forget whe are already on the next line
 				row.setRowNum(row.getRowNum() + 1);
-				LOGGER.error("Mapper " + mapper.getClass().getSimpleName() + " invocation error: ", e);
-				throw new RuntimeException("Mapper " + mapper.getClass().getSimpleName() + " invocation error: " + e.getMessage());
+				LOGGER.error("Mapper " + mapper.getClass().getSimpleName() + " invocation error: " + e.getMessage());
+				throw new IllegalArgumentException("Mapper " + mapper.getClass().getSimpleName() + " invocation error: " + e.getMessage());
 			}
 		} else {
 			csvLine.actionType = getActionType(csvLine);
