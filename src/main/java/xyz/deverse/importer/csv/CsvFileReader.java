@@ -141,11 +141,11 @@ public abstract class CsvFileReader<T, S extends CsvLine<T>> extends FileReader<
 							row.cellIterator(),
 							Spliterator.ORDERED)
 					, false).map(cell -> extractCellValue(cell).toString());
-					filter.getRawData().get(name).put(row.getRowNum(), () -> stream.iterator());
+					filter.getRawData().get(name).put(row.getRowNum(), stream::iterator);
 				});
 				filter.getGroups().add(name);
 			});
-			String firstCellOnFirstSheet = filter.getRawData().get(filter.getGroups().get(0)).get(0).iterator().next();
+			String firstCellOnFirstSheet = extractCellValue(workbook.getSheetAt(0).getRow(0).getCell(0)).toString();
 			filter.setVersion(Integer.parseInt(firstCellOnFirstSheet));
 			return filter;
 		} catch (Exception e) {
